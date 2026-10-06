@@ -1,3 +1,6 @@
+// Modifications Copyright 2026 Darko Demić.
+// Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
+
 //go:build windows
 
 package systray
@@ -43,39 +46,43 @@ func TestBaseWindowsTray(t *testing.T) {
 		t.Errorf("SetIcon failed: %s", err)
 	}
 
-	var id atomic.Int32
-	err := wt.addOrUpdateMenuItem(id.Add(1), "Simple enabled", false, false)
+	var id atomic.Uint32
+	err := wt.addOrUpdateMenuItem(id.Add(1), 0, "Simple enabled", "", false, false, false)
 	if err != nil {
 		t.Errorf("mergeMenuItem failed: %s", err)
 	}
-	err = wt.addOrUpdateMenuItem(id.Add(1), "Simple disabled", true, false)
+	err = wt.addOrUpdateMenuItem(id.Add(1), 0, "Simple disabled", "", true, false, false)
 	if err != nil {
 		t.Errorf("mergeMenuItem failed: %s", err)
 	}
-	err = wt.addSeparatorMenuItem(id.Add(1))
+	err = wt.addSeparatorMenuItem(id.Add(1), 0)
 	if err != nil {
 		t.Errorf("addSeparatorMenuItem failed: %s", err)
 	}
-	err = wt.addOrUpdateMenuItem(id.Add(1), "Simple checked enabled", false, true)
+	err = wt.addOrUpdateMenuItem(id.Add(1), 0, "Simple checked enabled", "", false, true, false)
 	if err != nil {
 		t.Errorf("mergeMenuItem failed: %s", err)
 	}
-	err = wt.addOrUpdateMenuItem(id.Add(1), "Simple checked disabled", true, true)
+	err = wt.addOrUpdateMenuItem(id.Add(1), 0, "Simple checked disabled", "", true, true, false)
+	if err != nil {
+		t.Errorf("mergeMenuItem failed: %s", err)
+	}
+	err = wt.addOrUpdateMenuItem(id.Add(1), 0, "Radio checked", "", false, true, true)
 	if err != nil {
 		t.Errorf("mergeMenuItem failed: %s", err)
 	}
 
-	err = wt.hideMenuItem(1)
+	err = wt.hideMenuItem(1, 0)
 	if err != nil {
 		t.Errorf("hideMenuItem failed: %s", err)
 	}
 
-	err = wt.hideMenuItem(100)
+	err = wt.hideMenuItem(100, 0)
 	if err == nil {
 		t.Error("hideMenuItem failed: must return error on invalid item id")
 	}
 
-	err = wt.addOrUpdateMenuItem(2, "Simple disabled update", true, false)
+	err = wt.addOrUpdateMenuItem(2, 0, "Simple disabled update", "", true, false, false)
 	if err != nil {
 		t.Errorf("mergeMenuItem failed: %s", err)
 	}
