@@ -8,8 +8,8 @@ import (
 	"log"
 	"time"
 
-	"fyne.io/systray"
-	"fyne.io/systray/example/icon"
+	"github.com/darkodemic/systray"
+	"github.com/darkodemic/systray/example/icon"
 )
 
 func main() {
