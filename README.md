@@ -52,7 +52,7 @@ For this reason there is another entry point `RunWithExternalLoop`.
 This function of the library returns a start and end function that should be called
 when the application has started and will end, to loop in appropriate features.
 
-See [full API](https://pkg.go.dev/github.com/darkodemic/systray?tab=doc) as well as [CHANGELOG](CHANGELOG.md).
+See [full API](https://pkg.go.dev/github.com/darkodemic/systray?tab=doc).
 
 Note: this package requires cgo, so make sure you set `CGO_ENABLED=1` before building.
 
