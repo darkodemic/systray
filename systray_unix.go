@@ -1,3 +1,6 @@
+// Modifications Copyright 2026 Darko Demić.
+// Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
+
 //go:build (linux || freebsd || openbsd || netbsd) && !android
 
 //Note that you need to have github.com/knightpp/dbus-codegen-go installed from "custom" branch
@@ -19,8 +22,8 @@ import (
 	"github.com/godbus/dbus/v5/introspect"
 	"github.com/godbus/dbus/v5/prop"
 
-	"fyne.io/systray/internal/generated/menu"
-	"fyne.io/systray/internal/generated/notifier"
+	"github.com/darkodemic/systray/internal/generated/menu"
+	"github.com/darkodemic/systray/internal/generated/notifier"
 )
 
 const (

@@ -1,7 +1,10 @@
+// Modifications Copyright 2026 Darko Demić.
+// Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
+
 package systray
 
 import (
-	"fyne.io/systray/internal/generated/notifier"
+	"github.com/darkodemic/systray/internal/generated/notifier"
 	"github.com/godbus/dbus/v5"
 )
 
