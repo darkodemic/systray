@@ -17,10 +17,12 @@ Whenever you change a file that came from upstream, make sure it starts with thi
 header, written in the file's comment syntax:
 
 ```go
-// This file was modified from the original in fyne-io/systray.
 // Modifications Copyright 2026 Darko Demić.
 // Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
 ```
+
+Keep the word "Modifications": it is what states that the file was changed, so
+dropping it would no longer meet section 4(b).
 
 A file you create from scratch gets this header instead:
 
