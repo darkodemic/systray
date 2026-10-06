@@ -5,11 +5,16 @@ package systray
 
 import (
 	"fmt"
+	"runtime"
 	"sync"
 	"testing"
+	"time"
 )
 
 func TestMenuItem_Remove(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skip("on macOS Run needs the main thread for the Cocoa event loop, and go test runs each test on another goroutine")
+	}
 	tests := []struct {
 		name         string                // description of this test case
 		menuItemFunc func() *MenuItem      // function to create the menu item to be removed
@@ -77,11 +82,15 @@ func TestMenuItem_Remove(t *testing.T) {
 	}
 	var wait sync.WaitGroup
 	wait.Add(1)
-	go Run(func() {
-		SetTitle("Test Tray")
-		SetTooltip("Test Tray Tooltip")
-		wait.Done()
-	}, nil)
+	stopped := make(chan struct{})
+	go func() {
+		Run(func() {
+			SetTitle("Test Tray")
+			SetTooltip("Test Tray Tooltip")
+			wait.Done()
+		}, nil)
+		close(stopped)
+	}()
 	wait.Wait()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -94,5 +103,12 @@ func TestMenuItem_Remove(t *testing.T) {
 			}
 		})
 	}
+	// Wait until Run has returned, so that later tests can start their own
+	// tray: on Windows the window class stays registered until then.
 	quit()
+	select {
+	case <-stopped:
+	case <-time.After(10 * time.Second):
+		t.Fatal("Run did not return after quit")
+	}
 }

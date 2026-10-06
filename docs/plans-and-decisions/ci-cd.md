@@ -50,7 +50,12 @@ Checked 2026-10-07 on `main` at c773042, which is release `v1.13.0`.
 
 All of them are required checks (Darko, §7). Their names go into the ruleset once the workflow has run green on `main`.
 
-The same PR fixes what the checks would fail on: it runs `gofmt` on the three upstream files (`systray_test.go` had CRLF line endings) and updates `systray_windows_test.go` to the current signatures of `addOrUpdateMenuItem`, `addSeparatorMenuItem` and `hideMenuItem`. While at it, it adds a checked radio item to that test. `TestWindowsRun` starts a real tray window. Whether that works on a GitHub Windows runner, which has no interactive user, only the first run will show; if it hangs, it gets skipped in CI with a reason in the test.
+The same PR fixes what the checks would fail on: it runs `gofmt` on the three upstream files (`systray_test.go` had CRLF line endings) and updates `systray_windows_test.go` to the current signatures of `addOrUpdateMenuItem`, `addSeparatorMenuItem` and `hideMenuItem`. While at it, it adds a checked radio item to that test.
+
+The first run on the runners (2026-10-07) found two more problems, both in upstream tests that had never run on those platforms:
+
+- **Windows:** `TestMenuItem_Remove`, the one test for all platforms, ran first, called `quit()` and returned without waiting for the tray to go away. The window class "SystrayClass" was still registered when `TestBaseWindowsTray` registered its own, which failed with "Class already exists". After that, `TestWindowsRun` hung until the 5-minute timeout. The test now waits until `Run` has returned.
+- **macOS:** `TestMenuItem_Remove` calls `Run` on a goroutine, but the Cocoa event loop only works on the main thread, so the tray never became ready and the test hung. It is skipped on macOS with that reason. The macOS job therefore checks vet and the cgo build; it runs no test until there is one that can run off the main thread.
 
 ## 4. Vulnerabilities and dependencies
 
@@ -104,6 +109,7 @@ Answered by Darko on 2026-10-07:
   - `LayoutUpdated` and `ItemsPropertiesUpdated` after the code changes an item.
 
   Without a session bus (`DBUS_SESSION_BUS_ADDRESS` unset), the test is skipped, so `go test ./...` keeps working everywhere.
+- **One tray per process.** On Linux `quit` closes a package-level channel that is never recreated, so `Run` works once per test binary: `TestMenuItem_Remove` panics under `go test -count=2`, on `main` too (checked 2026-10-07). The integration test must take that into account, for example by running in its own test binary or by resetting that state in the test.
 
 ## 9. Order of work
 
