@@ -1,0 +1,23 @@
+# Copyright 2026 Darko Demić.
+# Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
+
+# Keeps the Go module dependencies (godbus, x/sys) and the commit-pinned
+# GitHub Actions current: at most one pull request a month for each.
+# Dependabot security updates, a repository setting, open a pull request
+# for a vulnerable dependency right away, outside this schedule.
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: monthly
+    ignore:
+      # x/sys v0.31.0 and later require Go 1.23 or newer, but this module
+      # supports Go 1.20 (go.mod), and gpwebcam builds with Go 1.22. Lift
+      # this when the go directive moves; see ci-cd.md.
+      - dependency-name: golang.org/x/sys
+        versions: [">= 0.31.0"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

@@ -37,7 +37,7 @@ Negative:
 
 Risks:
 
-- A PR to fyne-io made from a branch based on the fork's `master` would carry the new path. The rule in `AGENTS.md` that such branches start from upstream `master` already prevents this.
+- A PR to fyne-io made from a branch based on the fork's `main` would carry the new path. The rule in `AGENTS.md` that such branches start from upstream `master` already prevents this.
 
 ## Alternatives considered
 

@@ -1,0 +1,54 @@
+# Copyright 2026 Darko Demić.
+# Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
+
+# Attaches a CycloneDX SBOM to every published GitHub release, then asks
+# proxy.golang.org for the version so pkg.go.dev lists it right away. The
+# tag (GPG-signed) and the release notes are made by hand. To attach the
+# SBOM to an older release, run this workflow by hand with its tag.
+# See docs/plans-and-decisions/ci-cd.md.
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag of an existing release, for example v1.13.0
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  sbom:
+    name: Attach SBOM
+    runs-on: ubuntu-24.04
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - name: Check the tag
+        run: |
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::not a release tag: $TAG"
+            exit 1
+          fi
+      # The full history and tags let cyclonedx-gomod derive the version.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ env.TAG }}
+          fetch-depth: 0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      - name: Generate CycloneDX SBOM
+        run: |
+          go mod download
+          go run github.com/CycloneDX/cyclonedx-gomod/cmd/cyclonedx-gomod@v1.12.0 \
+            mod -type library -licenses -assert-licenses -json -output "systray-$TAG.cdx.json" .
+      - name: Attach it to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" "systray-$TAG.cdx.json" --clobber
+      - name: Ask proxy.golang.org for the version
+        run: curl -sSf "https://proxy.golang.org/github.com/darkodemic/systray/@v/$TAG.info"

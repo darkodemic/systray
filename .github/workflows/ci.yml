@@ -1,0 +1,172 @@
+# Copyright 2026 Darko Demić.
+# Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
+
+# Checks every pull request and every push to main, and main again every
+# Monday, because new vulnerability advisories appear without any change
+# to the code: formatting and vet, tests on the oldest supported Go (the
+# go directive in go.mod) and on the latest stable Go, cross-builds for
+# the BSDs and Windows, Windows and macOS on their own runners, govulncheck,
+# and a CycloneDX SBOM scanned with Grype. Actions are pinned to commits.
+# See docs/plans-and-decisions/ci-cd.md.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      - name: Check formatting
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      # darwin needs cgo, so it is vetted on the macOS runner.
+      - name: Vet
+        run: |
+          for goos in linux windows freebsd; do
+            echo "GOOS=$goos"
+            GOOS=$goos go vet ./...
+          done
+
+  test:
+    name: Test (Go ${{ matrix.go }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # 1.20 is the go directive in go.mod; keep the two in sync.
+        go: ["1.20", stable]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ matrix.go }}
+      - run: go test -race -coverprofile=coverage.out ./...
+      - name: Coverage
+        run: |
+          {
+            echo "### Coverage (Go ${{ matrix.go }})"
+            echo
+            echo '```'
+            go tool cover -func=coverage.out | tail -n 1
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  cross-build:
+    name: Cross-build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      - name: Build
+        run: |
+          for goos in freebsd openbsd netbsd windows; do
+            echo "GOOS=$goos"
+            GOOS=$goos go build ./...
+          done
+
+  windows:
+    name: Windows
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      - run: go vet ./...
+      - run: go test -timeout 5m ./...
+
+  macos:
+    name: macOS
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      - run: go vet ./...
+      - run: go build ./...
+      - run: go test -timeout 5m ./...
+
+  govulncheck:
+    name: govulncheck
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      # govulncheck reports a vulnerability only when the code reaches an
+      # affected function, so it is checked per platform.
+      - name: govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
+          for goos in linux windows freebsd; do
+            echo "GOOS=$goos"
+            GOOS=$goos govulncheck ./...
+          done
+
+  sbom:
+    name: SBOM
+    runs-on: ubuntu-24.04
+    steps:
+      # The full history and tags let cyclonedx-gomod derive the version.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      - name: Generate CycloneDX SBOM
+        run: |
+          go mod download
+          go run github.com/CycloneDX/cyclonedx-gomod/cmd/cyclonedx-gomod@v1.12.0 \
+            mod -type library -licenses -assert-licenses -json -output systray.cdx.json .
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom
+          path: systray.cdx.json
+      - name: Scan SBOM with Grype
+        id: grype
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
+        with:
+          sbom: systray.cdx.json
+          fail-build: false
+          output-format: json
+      # Grype matches module versions, so it also lists advisories for code
+      # this module never calls (govulncheck covers that). Every finding goes
+      # into the job summary; only high and critical ones fail the job.
+      - name: Report findings, fail on high or critical
+        env:
+          REPORT: ${{ steps.grype.outputs.json }}
+        run: |
+          {
+            echo "### Grype: vulnerabilities in the SBOM"
+            echo
+            if [ "$(jq '.matches | length' "$REPORT")" -eq 0 ]; then
+              echo "None found."
+            else
+              echo "| Module | Version | Vulnerability | Severity | Fixed in |"
+              echo "|---|---|---|---|---|"
+              jq -r '.matches[] | "| \(.artifact.name) | \(.artifact.version) | \(.vulnerability.id) | \(.vulnerability.severity) | \(.vulnerability.fix.versions | join(", ")) |"' "$REPORT"
+            fi
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          high=$(jq '[.matches[] | select(.vulnerability.severity == "High" or .vulnerability.severity == "Critical")] | length' "$REPORT")
+          if [ "$high" -gt 0 ]; then
+            echo "::error::$high high or critical vulnerabilities in the SBOM; see the table above"
+            exit 1
+          fi
