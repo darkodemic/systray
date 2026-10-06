@@ -1,0 +1,15 @@
+systray
+https://github.com/darkodemic/systray
+
+This is a fork of https://github.com/fyne-io/systray, which is itself a fork
+of https://github.com/getlantern/systray.
+
+Code up to and including fyne-io/systray commit
+528cad23fade249776ea023d9a0028731c9ad484:
+Copyright 2014 Brave New Software Project, Inc.
+and the contributors to getlantern/systray and fyne-io/systray.
+
+Modifications by Darko Demić made after that commit:
+Copyright 2026 Darko Demić
+
+Licensed under the Apache License, Version 2.0. See the LICENSE file.
