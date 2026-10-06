@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
 
 # CI/CD for the fork
 
-- **Status:** Accepted 2026-10-07 with Darko's answers in §7. CI, the SBOM with Grype, Dependabot and CODEOWNERS are built and green (§3–§6); the D-Bus integration test (§8) is next.
+- **Status:** Accepted 2026-10-07 with Darko's answers in §7. CI, the SBOM with Grype, Dependabot and CODEOWNERS are in `main`, and all eight jobs are required checks (§3–§6, §9.2); the D-Bus integration test (§8, issue #11) is next.
 - **Date:** 2026-10-07
 - **Owner:** Darko
 - **Related:** `0001-module-path.md`; issue #5 (FreeBSD build); gpwebcam's `.github/workflows/ci.yml`, whose layout (actions pinned to commits, `contents: read`, oldest and newest Go) this plan follows.
@@ -119,4 +119,4 @@ Answered by Darko on 2026-10-07:
 
 ## Where we are and what is next
 
-2026-10-07: decisions recorded in §7. The PR from §9.1 (#10) is green on all eight checks after the test fixes in §3; Grype reports only GO-2026-5024 (low). The dependency graph, Dependabot alerts and security updates are on. Next, after the merge: the required checks in the ruleset and the release workflow run for `v1.13.0` (§9.2), then the D-Bus integration test (issue #11).
+2026-10-07: #10 is merged (effb1dc), and CI is green on `main` on all eight jobs. Those jobs are required checks in the ruleset "Main protection", with strict status checks. The release workflow, run by hand, attached `systray-v1.13.0.cdx.json` to `v1.13.0`. The dependency graph, Dependabot alerts and security updates are on. Next: the D-Bus integration test (§8, issue #11).
