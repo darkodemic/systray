@@ -1,3 +1,9 @@
+<!--
+This file was modified from the original in fyne-io/systray.
+Modifications Copyright 2026 Darko Demić.
+Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
+-->
+
 # Systray
 
 systray is a cross-platform Go library to place an icon and menu in the notification area.
