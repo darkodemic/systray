@@ -1,4 +1,4 @@
-module fyne.io/systray
+module github.com/darkodemic/systray
 
 go 1.20
 

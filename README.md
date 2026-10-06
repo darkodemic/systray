@@ -6,8 +6,10 @@ Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
 # Systray
 
 systray is a cross-platform Go library to place an icon and menu in the notification area.
-This repository is a fork of [getlantern/systray](https://github.com/getlantern/systray)
-removing the GTK dependency and support for legacy linux system tray.
+This repository is a fork of [fyne-io/systray](https://github.com/fyne-io/systray),
+which is itself a fork of [getlantern/systray](https://github.com/getlantern/systray)
+that removed the GTK dependency and support for the legacy Linux system tray.
+See [NOTICE](NOTICE) for copyright.
 
 ## Features
 
@@ -20,8 +22,8 @@ removing the GTK dependency and support for legacy linux system tray.
 ```go
 package main
 
-import "fyne.io/systray"
-import "fyne.io/systray/example/icon"
+import "github.com/darkodemic/systray"
+import "github.com/darkodemic/systray/example/icon"
 
 func main() {
 	systray.Run(onReady, onExit)
@@ -42,44 +44,24 @@ func onExit() {
 }
 ```
 
-### Running in a Fyne app
+### Run in a GUI toolkit
 
-This repository is designed to allow any toolkit to integrate system tray without any additional dependencies.
-It is maintained by the Fyne team, but if you are using Fyne there is an even easier to use API in the main repository that wraps this project.
-
-In your app you can use a standard `fyne.Menu` structure and pass it to `SetSystemTrayMenu` when your app is a desktop app, as follows:
-
-```go
-	menu := fyne.NewMenu("MyApp",
-		fyne.NewMenuItem("Show", func() {
-			log.Println("Tapped show")
-		}))
-
-	if desk, ok := myApp.(desktop.App); ok {
-		desk.SetSystemTrayMenu(menu)
-	}
-```
-
-You can find out more in the toolkit documentation:
-[System Tray Menu](https://developer.fyne.io/explore/systray).
-
-### Run in another toolkit
-
+This library is designed to allow any toolkit to integrate a system tray without any additional dependencies.
 Most graphical toolkits will grab the main loop so the `Run` code above is not possible.
 For this reason there is another entry point `RunWithExternalLoop`.
 This function of the library returns a start and end function that should be called
 when the application has started and will end, to loop in appropriate features.
 
-See [full API](https://pkg.go.dev/fyne.io/systray?tab=doc) as well as [CHANGELOG](https://github.com/fyne-io/systray/tree/master/CHANGELOG.md).
+See [full API](https://pkg.go.dev/github.com/darkodemic/systray?tab=doc) as well as [CHANGELOG](CHANGELOG.md).
 
 Note: this package requires cgo, so make sure you set `CGO_ENABLED=1` before building.
 
 ## Try the example app!
 
-Have go v1.12+ or higher installed? Here's an example to get started on macOS or Linux:
+Have go v1.19 or higher installed? Here's an example to get started on macOS or Linux:
 
 ```sh
-git clone https://github.com/fyne-io/systray
+git clone https://github.com/darkodemic/systray
 cd systray/example
 go run .
 ```
@@ -106,7 +88,7 @@ Search for "StatusNotifierItems XEmbedded" in your package manager.
 
 ### Windows
 
-* To avoid opening a console at application startup, use "fyne package" for your app or manually use these compile flags:
+* To avoid opening a console at application startup, use these compile flags:
 
 ```sh
 go build -ldflags -H=windowsgui
@@ -114,7 +96,7 @@ go build -ldflags -H=windowsgui
 
 ### macOS
 
-On macOS, you will need to create an application bundle to wrap the binary; simply use "fyne package" or add folders with the following minimal structure and assets:
+On macOS, you will need to create an application bundle to wrap the binary; add folders with the following minimal structure and assets:
 
 ```
 SystrayApp.app/
@@ -126,7 +108,7 @@ SystrayApp.app/
       SystrayApp.icns
 ```
 
-If bundling manually, you may want to add one or both of the following to your Info.plist:
+You may want to add one or both of the following to your Info.plist:
 
 ```xml
 	<!-- avoid having a blurry icon and text -->
@@ -147,6 +129,7 @@ icon off the menu bar.
 
 ## Credits
 
+- https://github.com/fyne-io/systray
 - https://github.com/getlantern/systray
 - https://github.com/xilp/systray
 - https://github.com/cratonica/trayhost
