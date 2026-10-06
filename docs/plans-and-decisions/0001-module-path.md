@@ -3,48 +3,48 @@ Copyright 2026 Darko Demić.
 Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
 -->
 
-# 0001 — Putanja Go modula: github.com/darkodemic/systray
+# 0001 — Go module path: github.com/darkodemic/systray
 
-- **Status:** Prihvaćeno 2026-10-07. Modul se zove `github.com/darkodemic/systray` umesto `fyne.io/systray`.
-- **Datum:** 2026-10-07
-- **Zamenjuje:** — / **Zamenjena sa:** —
-- **Vlasnik:** Darko
-- **Povezano:** `NOTICE` (poreklo i autorska prava forka), `AGENTS.md` (grane za fyne-io PR-ove kreću od upstream `master`-a)
+- **Status:** Accepted 2026-10-07. The module is `github.com/darkodemic/systray` instead of `fyne.io/systray`.
+- **Date:** 2026-10-07
+- **Supersedes:** — / **Superseded by:** —
+- **Owner:** Darko
+- **Related:** `NOTICE` (provenance and copyright of the fork), `AGENTS.md` (branches for fyne-io PRs start from upstream `master`)
 
-## Kontekst
+## Context
 
-- Fork je od fyne-io/systray nasledio `module fyne.io/systray`. Domen `fyne.io` pripada Fyne projektu, pa fork pod tim imenom izgleda kao njihov paket.
-- Sa tom putanjom `go get github.com/darkodemic/systray` ne radi: Go odbija modul jer on za sebe kaže da je `fyne.io/systray`. Fork se zato može koristiti samo preko `replace` direktive. gpwebcam ga koristi upravo tako: `replace fyne.io/systray => github.com/darkodemic/systray v1.12.3-0.20261006205618-9c45f672f861` (provereno 2026-10-07).
-- README je opisivao integraciju sa Fyne toolkit-om i `fyne package`, a to za ovaj fork nije relevantno.
+- The fork inherited `module fyne.io/systray` from fyne-io/systray. The `fyne.io` domain belongs to the Fyne project, so under that name the fork looks like their package.
+- With that path, `go get github.com/darkodemic/systray` does not work: Go rejects the module because it declares itself as `fyne.io/systray`. The fork can therefore only be used through a `replace` directive. gpwebcam uses it exactly that way: `replace fyne.io/systray => github.com/darkodemic/systray v1.12.3-0.20261006205618-9c45f672f861` (checked 2026-10-07).
+- The README described integration with the Fyne toolkit and `fyne package`, which is not relevant to this fork.
 
-## Odluka
+## Decision
 
-1. `go.mod` deklariše `module github.com/darkodemic/systray`, a svi interni import-i, primer i README koriste tu putanju.
-2. Iz README-a su uklonjeni delovi specifični za Fyne: sekcija o Fyne aplikaciji, preporuke za `fyne package` i linkovi na developer.fyne.io i pkg.go.dev/fyne.io.
-3. Poreklo ostaje zapisano. README (uvod i Credits), `NOTICE` i `AGENTS.md` i dalje pominju fyne-io/systray, jer je to atribucija, a ne brending.
+1. `go.mod` declares `module github.com/darkodemic/systray`, and all internal imports, the example and the README use that path.
+2. The Fyne-specific parts of the README are removed: the section on Fyne apps, the `fyne package` hints and the links to developer.fyne.io and pkg.go.dev/fyne.io.
+3. The provenance stays on record. The README (intro and Credits), `NOTICE` and `AGENTS.md` still mention fyne-io/systray, because that is attribution, not branding.
 
-## Posledice
+## Consequences
 
-Pozitivne:
+Positive:
 
-- Fork se koristi direktno, `go get github.com/darkodemic/systray`, bez `replace` direktive.
-- pkg.go.dev prikazuje dokumentaciju forka pod njegovim sopstvenim imenom.
+- The fork is used directly, `go get github.com/darkodemic/systray`, without a `replace` directive.
+- pkg.go.dev shows the fork's documentation under its own name.
 
-Negativne:
+Negative:
 
-- Ovo je izmena koja lomi korisnike. Ko importuje `fyne.io/systray` sa `replace` na fork mora, pri prelasku na verziju posle ove izmene, da promeni import-e na novu putanju i da ukloni `replace`. Starija verzija na koju je projekat već pinovan (gpwebcam na 9c45f67) radi i dalje.
-- Pri preuzimanju izmena iz upstream-a nastaju konflikti u import linijama pet fajlova (`systray_unix.go`, `systray_menu_unix.go`, `systray_notifier_unix.go`, `systray_unix_test.go`, `example/main.go`) kad god upstream menja te linije.
+- This is a breaking change. Anyone who imports `fyne.io/systray` with a `replace` to the fork has to change the imports to the new path and remove the `replace` when moving to a version after this change. An older version a project is already pinned to (gpwebcam at 9c45f67) keeps working.
+- Pulling changes from upstream causes conflicts in the import lines of five files (`systray_unix.go`, `systray_menu_unix.go`, `systray_notifier_unix.go`, `systray_unix_test.go`, `example/main.go`) whenever upstream changes those lines.
 
-Rizici:
+Risks:
 
-- PR ka fyne-io napravljen iz grane zasnovane na `master`-u forka nosio bi novu putanju. Pravilo iz `AGENTS.md`, po kome takve grane kreću od upstream `master`-a, to već sprečava.
+- A PR to fyne-io made from a branch based on the fork's `master` would carry the new path. The rule in `AGENTS.md` that such branches start from upstream `master` already prevents this.
 
-## Razmotrene alternative
+## Alternatives considered
 
-- **Zadržati `fyne.io/systray`.** Imalo bi manje konflikata sa upstream-om, ali bi fork ostao upotrebljiv samo preko `replace` direktive i nosio bi tuđi domen.
-- **Vanity putanja (npr. `darkodemic.com/systray`).** Bila bi nezavisna od GitHub-a, ali zahteva hostovanje `go-import` meta tagova, a za tim sada nema potrebe.
+- **Keep `fyne.io/systray`.** Fewer conflicts with upstream, but the fork would stay usable only through a `replace` directive and would carry someone else's domain.
+- **Vanity path (for example `darkodemic.com/systray`).** Independent of GitHub, but it requires hosting `go-import` meta tags, and there is no need for that now.
 
-## Van opsega
+## Out of scope
 
-- Prelazak gpwebcam-a na novu putanju.
-- `Makefile` cilj `tag-changelog`, koji i dalje generiše changelog iz getlantern/systray.
+- Moving gpwebcam to the new path.
+- The `Makefile` target `tag-changelog`, which generates the changelog from getlantern/systray. Handled separately in issue #6, which removes the `Makefile` and the stale `CHANGELOG.md`.

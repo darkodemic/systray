@@ -49,3 +49,9 @@ Rules:
   such as images and icons.
 - A branch for a pull request to fyne-io/systray starts from fyne-io's `master`
   and gets no headers, because upstream does not carry this notice.
+
+## Language
+
+Everything in this repository is written in English: code, comments, the README
+and the plan and decision documents in `docs/plans-and-decisions/`, whatever
+language the conversation is in.
