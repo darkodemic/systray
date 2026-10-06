@@ -1,3 +1,6 @@
+// Modifications Copyright 2026 Darko Demić.
+// Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
+
 // Package systray is a cross-platform Go library to place an icon and menu in the notification area.
 package systray
 

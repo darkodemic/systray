@@ -1,3 +1,6 @@
+// Modifications Copyright 2026 Darko Demić.
+// Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
+
 //go:build windows
 
 package systray
