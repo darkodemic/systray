@@ -6,7 +6,7 @@
 package icon
 
 import (
-    _ "embed"
+	_ "embed"
 )
 
 //go:embed icon.png

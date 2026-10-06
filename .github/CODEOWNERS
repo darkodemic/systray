@@ -1,0 +1,5 @@
+# Copyright 2026 Darko Demić.
+# Licensed under the Apache License, Version 2.0; see LICENSE and NOTICE.
+
+# The ruleset "Main protection" requires a code owner's review on main.
+* @darkodemic
